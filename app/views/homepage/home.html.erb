@@ -1,0 +1,364 @@
+<%maps_key = MarketplaceHelper.google_maps_key(@current_community.id)%>
+<%= javascript_include_tag "https://maps.googleapis.com/maps/api/js?key=#{maps_key}&libraries=places"%>
+
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+
+<header class="custom-header">
+  <div class="header-container">
+    <a href="#" class="ct-logo"><%=image_tag 'logoNoBkgrnd.png' %></a>
+    <div class="header-links">
+      <%= link_to 'Become a host', new_listing_path%>
+      <%unless logged_in? %>
+        <%= link_to 'login', login_path, class: 'fill'%>
+        <%= link_to 'sign up', sign_up_path%>
+      <%end%>
+    </div>
+
+    <%if logged_in? %>
+      <div class="toggle with-borders headerDropdown" id="home_toolbar-select-share-type" data-toggle='.type-dropdown'>
+        <button class="menu_btn toggle-header"><%=image_tag 'menu.png' %></button>
+        <div class="type-dropdown toggle-menu hidden">
+          <%= link_to 'Inbox', person_inbox_path(@current_user)%>
+          <%= link_to  'Settings', person_settings_path(@current_user)%>
+          <div class="phone-show">
+            <%= link_to 'Become a host', new_listing_path%>
+          </div>
+          <% if @current_user.has_admin_rights?(@current_community)%>
+            <%= link_to 'Admin', '/en/admin'%>
+          <% end %>          
+          <%= link_to 'Logout', logout_path %>
+        </div>
+      </div>
+    <%end%>
+  </div>
+</header>
+
+<div class="landing-page">
+  <section class="banner">
+    <div class="custom-container">
+      <div class="banner-content">
+        <%= form_tag search_path, method: :get, id: "homepage-filters", class: 'banner-text' do %>
+          <h4>agora work</h4>
+          <h1>work from anywhere</h1>
+          <div class="search-block">
+            <div class="where">
+              <label for="">Where</label>
+              <%= text_field_tag :lq, params[:lq], :placeholder => 'search destination' %>
+              <%= hidden_field_tag 'lc', params[:lc]%>
+              <%= hidden_field_tag 'ls', ''%>
+              <%= hidden_field_tag 'boundingbox', params[:boundingbox]%>
+              <%= hidden_field_tag 'distance_max', ''%>
+            </div>
+            <div class="when">
+              <label for="">When</label>
+              <input type="text" name="daterange" value="" placeholder="Select Date" />
+              <%= hidden_field_tag :start_date, ''%>
+              <%= hidden_field_tag :end_date, ''%>
+            </div>
+            <div class="guests">
+              <label for="">guests</label>
+              <%= select_tag :guests, options_for_select(['1', '2', '3', '4', '5']), {include_blank: '-- add guests --', id: 'number'} %>
+            </div>
+            <input type="submit" hidden />
+            <button class="search-btn"><%=image_tag 'search.svg' %> SEARCH</button>
+          </div>
+          <p>Working from home not working out? Book a coworking space or private office</p>
+          <span>Get a space for a day, a week, or however long you need</span>
+        <%end%>
+        <div class="banner-img">
+          <div class="img-block">
+            <%=image_tag 'banner-img.jpg' %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+<!--   <section class="future-of-work">
+    <div class="custom-container">
+      <div class="text-content">
+        <div class="big-text">
+          <h1>THE <span>future</span> of work</h1>
+        </div>
+        <div class="small-text">
+          <p>Remote work is no longer the future of work, it's the standard. Empower your teams to work remotely with access to a network of coworking spaces. Whether you’re meeting with clients downtown or with your team in the city’s south side, we save you time, costs, and we're hassle free</p>
+        </div>
+        <p class="get-touch">get in touch <a href="#">corporate@agorawork.co</a></p>
+      </div>
+    </div>
+  </section> -->
+  <!--  Commenting out / hiding the blue section for now
+  <div class="workers-column">
+    <div class="custom-container">
+      <div class="workers-tab-nav">
+        <ul>
+          <li class="active how-it-work-section" id="remote-work-tab-content"><span>FOR REMOTE WORKERS</span></li>
+          <li class="how-it-work-section" id="remote-work-host-tab-content"><span>FOR HOSTS</span></li>
+        </ul>
+      </div>
+      <div class="workers-tab-content">
+        <ul class="remote-work-tab-content how-work-sec-content">
+          <li>
+            <%= image_tag 'landing-page/img-1.png'%>
+            <p><strong>Network</strong> Work from anywhere</p>
+          </li>
+          <li>
+            <%= image_tag 'landing-page/img-2.png'%>
+            <p><strong>Flexibility</strong> Book spaces for a day, a week, or a month</p>
+          </li>
+          <li>
+            <%= image_tag 'landing-page/img-3.png'%>
+            <p><strong>Trust</strong> Reviewed and verified hosts and companies</p>
+          </li>
+          <li>
+            <%= image_tag 'landing-page/img-4.png'%>
+            <p><strong>Community</strong> Find and connect with community</p>
+          </li>
+        </ul>
+        <ul style="display: none;" class="remote-work-host-tab-content how-work-sec-content">
+          <li>
+            <%= image_tag 'landing-page/img-5.png'%>
+            <p><strong>Grow Your Business</strong> Rent unused or underused spaces</p>
+          </li>
+          <li>
+            <%= image_tag 'landing-page/img-2.png'%>
+            <p><strong>Flexibility</strong> List spaces when you want</p>
+          </li>
+          <li>
+            <%= image_tag 'landing-page/img-3.png'%>
+            <p><strong>Trust</strong> Reviewed and verified guests and companies</p>
+          </li>
+          <li>
+            <%= image_tag 'landing-page/img-6.png'%>
+            <p><strong>Anchorage & Downstream Revenue </strong> Increase foot traffic for corollary businesses</p>
+          </li>
+        </ul>        
+      </div>
+    </div>
+  </div> 
+  end of the blue section
+  -->
+  
+  <section class="favorite-spaces">
+    <h3>Work remotely from your favorite spaces</h3>
+    <div class="container-container">
+      <div class="container">
+        <input type="radio" name="slider" id="item-1" checked>
+        <input type="radio" name="slider" id="item-2">
+        <input type="radio" name="slider" id="item-3">
+        <div class="cards">
+          <label class="card" for="item-1" id="song-1">
+            <img src="https://images.unsplash.com/photo-1542089363-bba089ffaa25?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" alt="song">
+          </label>
+          <label class="card" for="item-2" id="song-2">
+            <img src="https://images.unsplash.com/photo-1631247770372-1971e07dd9f4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80" alt="song">
+          </label>
+          <label class="card" for="item-3" id="song-3">
+            <img src="https://images.unsplash.com/photo-1516062423079-7ca13cdc7f5a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1183&q=80" alt="song">
+          </label>
+          <label class="card-hidden">
+            <img src="https://images.unsplash.com/photo-1530651788726-1dbf58eeef1f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=882&q=80">
+          </label>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="about-us">
+    <div class="custom-container">
+      <div class="text-content">
+        <div class="big-text">
+          <h1 class="dark">about us</h1>
+        </div>
+        <div class="small-text">
+          <p>Agora Work was born out of the need for productive working spaces following the 2020 global pandemic. As remote work has become the
+          standard for many companies and organizations, we at Agora Work aim to support the transition to work-from-anywhere. With our network of
+          spaces and flexible booking arrangements, we hope to provide you with the opportunity to find and connect with your community.</p>
+          <br>
+          <p>Whether you’re meeting with clients downtown or with your team in the city’s south side, we promise to save you time, money, and provide you
+          with a hassle-free experience.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="did-you-know">
+    <div class="custom-container">
+      <div class="facts-block">
+        <h3>Did you know?</h3>
+        <div class="facts-cards">
+          <div class="facts-card">
+            <div class="facts-card-header">
+              <%=image_tag 'icons8-money-96.png' %>
+              <b>$2,000</b>
+            </div>
+            <div class="small-text">
+              <p>Companies that allow remote
+              work see an average of $2,000
+              in profit per remote worker</p>
+            </div>
+          </div>
+          <div class="facts-card">
+            <div class="facts-card-header">
+              <%=image_tag 'icons8-globe-96.png' %>
+              <b>80%</b>
+            </div>
+            <div class="small-text">
+              <p>More than four in five
+              Canadians would choose to
+              work remotely for the rest of
+              their lives</p>
+            </div>
+          </div>
+          <div class="facts-card">
+            <div class="facts-card-header">
+              <%=image_tag 'icons8-heart-96.png' %>
+              <b>74%</b>
+            </div>
+            <div class="small-text">
+              <p>74% of workers report being
+              able to work remotely makes
+              them less likely to leave a
+              company</p>
+            </div>
+          </div>
+          <div class="facts-card">
+            <div class="facts-card-header">
+              <%=image_tag 'icons8-bulb-96.png' %>
+              <b>64%</b>
+            </div>
+            <div class="small-text">
+              <p>64% of recruiters report a
+              remote work policy helps them
+              find high quality talent</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="our-customers">
+    <div class="custom-container">
+      <div class="customers-block">
+        <div class="big-text">
+          <h3>
+            Don't take it from us...
+          </h3>
+        </div>
+        <div class="review-list">
+          <ul>
+            <li>
+              <p>Working from home started to feel a lot like quarantine. I felt lonely and really needed a change. Agora helped.</p>
+              <h4>Amanda Bennett, social media Manager</h4>
+            </li>
+            <li>
+              <p>Meeting clients at Starbucks felt wrong but signing a long-term office felt worse. Agora was the perfect medium.</p>
+              <h4>Jiara Hassan, entrepreneur</h4>
+            </li>
+            <li>
+              <p>I love the flexibility of working from wherever the day takes me!</p>
+              <h4>Chun Hei Kim, Web Designer</h4>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  
+</div>
+
+
+<footer class="custom-footer">
+  <div class= "col">
+    <div class="column-container">
+      <div class= "contact-us-image">
+        <a href="#" class="ct-logo"><%=image_tag 'logoNoBkgrnd.png' %></a>
+        <p>Work From Anywhere</p>
+      </div>
+      
+      <p> Contact us:</p>
+      <p> info@agorawork.co</p>
+      <p class="contact-info"> +1 780-780-7807</p>
+      <p class="contact-info"> 2506 20 Avenue NW</p>
+      <p> Edmonton, Alberta</p>
+      
+    
+    </div>
+  </div>
+  <div class= "col">
+    <div class="footer-links">
+      
+      <ul style="list-style-type:none;">
+        <li class="quick-links">Quick Links</li>
+        <li> <a href="#"> Home </a></li>
+        <li> <%= link_to 'Become a host', new_listing_path%> </li>
+      
+        <li> <%= link_to 'Login', login_path, class: 'fill'%></li>
+     
+        <li><%= link_to 'Sign up', sign_up_path%></li>
+
+        <li> <a href="/en/user_feedbacks/new"> Contact us </a></li>
+ 
+
+      </ul>
+    </div>
+  </div>
+  <div class= "col">
+    
+    <div class="">
+      <p class= "contact-form">Contact Form:</p>
+      <form class="new_feedback" id="new_feedback" action="/en/user_feedbacks" accept-charset="UTF-8" method="post" novalidate="novalidate"><input name="utf8" type="hidden" value="✓"><input type="hidden" name="authenticity_token" value="dPbN6xyu49lEiddfv5yBfMcZKzceUlB9LJxPM6MCamdG76XZ91panI4ouDMKCXf2mUSLSj/wjtJizSbCusLr8A=="><label for="feedback_email">Your email address (to contact you)</label>
+        <input type="text" name="feedback[email]" id="feedback_email">
+        <label class="unwanted_text_field" for="feedback_title">You should not see this field, if CSS is working.</label>
+        <input class="unwanted_text_field" id="error_feedback_unwanted_title" type="text" name="feedback[title]">
+        <label for="feedback_content">Your message to the Agora Work team</label>
+        <textarea name="feedback[content]" id="feedback_content"></textarea>
+        <input value="https://www.agorawork.co/en/user_feedbacks/new" type="hidden" name="feedback[url]" id="feedback_url">
+        <button name="button" type="submit">Send message</button>
+      </form>
+    </div>
+
+  </div>
+</footer>
+
+<% content_for :extra_javascript do %> 
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+  <script type="text/javascript">
+    $(function() {
+      $('input[name="daterange"]').daterangepicker({
+        autoUpdateInput: false,
+        opens: 'left',
+        minDate: new Date(),
+        format: 'YYYY/MM/DD',
+        autoclose: true,
+        cancelLabel: 'Clear'
+      });
+
+      $('input[name="daterange"]').on('apply.daterangepicker', function(ev, picker) {
+        $(this).val(picker.startDate.format('YYYY/MM/DD') + ' - ' + picker.endDate.format('YYYY/MM/DD'));
+
+        // Set Start End date values
+        $('#start_date').val(picker.startDate.format('YYYY/MM/DD'));
+        $('#end_date').val(picker.endDate.format('YYYY/MM/DD'));
+      });
+
+      $(".how-it-work-section").hover(function(e){
+          $('.how-it-work-section').removeClass('active');
+          $(this).addClass('active');
+          var tabId = $(this).attr('id');
+          $('.how-work-sec-content').hide();
+          $('.'+tabId).show();
+        },function(e){
+          //$("#secret").hide()
+      })
+    });
+
+    window.ST.initializeLocationSearch({
+      form: '#homepage-filters',
+      search: '#homepage-filters [name="lq"]',
+      status: '#homepage-filters [name=ls]',
+      coordinate: '#homepage-filters [name=lc]',
+      boundingbox: '#homepage-filters [name=boundingbox]',
+      maxDistance: '#homepage-filters [name=distance_max]'
+    })
+  </script>
+<% end %>

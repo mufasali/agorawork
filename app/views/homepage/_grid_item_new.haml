@@ -1,0 +1,41 @@
+- frontpage_fragment_cache("grid_item", listing) do
+  - distance = Maybe(listing.distance).or_else(nil)   
+  .listing-grid-item{id: "listing-#{listing.id}"}
+    .listing_author
+      = link_to(person_path(username: listing.author.username)) do
+        = image_tag(listing.author.avatar.thumb || missing_avatar(:thumb), :class => "author-img")
+      - name = PersonViewUtils.person_entity_display_name(listing.author, @current_community.name_display_type)
+      - if(!show_distance || distance.blank?)
+        = link_to(person_path(username: listing.author.username), :class => "author_name", title: name) do
+          = name
+      - else
+        = link_to(person_path(username: listing.author.username), class: "home-fluid-thumbnail-grid-details-author-name", title: name) do
+          = name
+        - dist = format_distance(distance)
+        - dist_string = "#{dist} #{listing.distance_unit}"
+        .location
+          %span{title: dist_string}
+            = dist_string
+
+    -# Listing image
+    = link_to(listing_path(listing.url), :class => "listing_img") do
+      - with_first_listing_image(listing) do |first_image_url|
+        = image_tag first_image_url, {:alt => listed_listing_title(listing), :class => ""}
+
+    -# Listing author details
+    .listing_details
+      %h2
+        = listing.title
+
+      .price{:class => ""}
+        - if listing.price
+          %span
+            = MoneyViewUtils.to_humanized(listing.price)
+            - price_unit = price_quantity_slash_unit(listing)
+          - if !price_unit.blank?
+            - price_text = " " + price_unit
+            %span{:title => price_text}
+              = price_text
+        - else
+          %span{:class => ""}
+            = shape_name(listing)
