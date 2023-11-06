@@ -3,9 +3,33 @@ module ListingIndexService::Search::DatabaseSearchHelper
   module_function
 
   def success_result(count, listings, includes)
+    # marketplace_configurations = MarketplaceService::API::Api.configurations.get(community_id: Community.last.id).data
+    marketplace_configuration = Community.last.configuration
+    distance_system = marketplace_configuration ? marketplace_configuration[:distance_unit].to_sym : nil
+    distance_unit = distance_system == :metric ? :km : :miles
     Result::Success.new(
-      {count: count, listings: listings.map { |l| ListingIndexService::Search::Converters.listing_hash(l, includes) }})
+      {count: count, listings: listings.map { |l|
+        distance_hash = parse_distance(l, distance_unit)
+        ListingIndexService::Search::Converters.listing_hash( l, includes, distance_hash ) 
+        }
+      }
+    )
   end
+
+  def parse_distance(l, distance_unit)
+    distance = if distance_unit == :miles
+      (l.distance / 1000) / 1.60934
+    else
+      (l.distance / 1000)
+    end
+    if(distance.present? && distance_unit.present?)
+      { distance: distance, distance_unit: distance_unit }
+    else
+      {}
+    end
+  rescue
+    {}
+  end  
 
   def fetch_from_db(community_id:, search:, included_models:, includes:)
     where_opts = HashUtils.compact(
@@ -44,7 +68,9 @@ module ListingIndexService::Search::DatabaseSearchHelper
       :listing_shape_ids,
       :categories,
       :fields,
-      :price_cents
+      :price_cents,
+      :start_date,
+      :start_time
     ].any? { |field| search[field].present? }
   end
 

@@ -121,8 +121,9 @@ module StripeService::API
       end
 
       def order_total(tx)
-        shipping_total = Maybe(tx.shipping_price).or_else(0)
-        tx.unit_price * tx.listing_quantity + shipping_total + tx.buyer_commission
+        #shipping_total = Maybe(tx.shipping_price).or_else(0)
+        #tx.unit_price * tx.listing_quantity + shipping_total + tx.buyer_commission
+        tx.payment_total
       end
 
       private

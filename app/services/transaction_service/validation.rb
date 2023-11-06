@@ -163,7 +163,9 @@ module TransactionService
 
         booking = Booking.new(
           booking_params.merge(
-          tx: ::Transaction.new(listing: listing))
+            tx: ::Transaction.new(listing: listing),
+            skip_validation: true
+          )
         )
         if booking.valid?
           Result::Success.new(tx_params)

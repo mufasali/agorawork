@@ -14,6 +14,7 @@
           %th{scope: :col}= render 'sort_link', column: 'started', direction: sort_link_direction('started'), title: t('admin2.manage_listings.created')
           %th{scope: :col}= render 'sort_link', column: 'updated', direction: sort_link_direction('updated'), title: t('admin2.manage_listings.updated')
           %th{scope: :col}= t('admin2.manage_listings.category')
+          %th{scope: :col}= t('admin2.manage_listings.quantity')
           %th{scope: :col}= t('admin2.manage_listings.actions')
       %tbody
         = render partial: 'listing', collection: @presenter.listings, locals: { presenter: @presenter }

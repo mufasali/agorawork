@@ -15,13 +15,17 @@ module TransactionService
          start_on: tx_params[:start_on],
          end_on: tx_params[:end_on],
          duration: quantity,
+         over_duration: over_duration,
          listing_price: listing.price,
+         weekly_price: weekly_price,
+         monthly_price: monthly_price,
          localized_unit_type: translate_unit_from_listing,
          localized_selector_label: translate_selector_label_from_listing,
          subtotal: subtotal_to_show,
          shipping_price: shipping_price_to_show,
          total: order_total,
          unit_type: listing.unit_type,
+         price_unit_type: price_unit_type,
          start_time: tx_params[:start_time],
          end_time: tx_params[:end_time],
          per_hour: tx_params[:per_hour],
@@ -33,11 +37,37 @@ module TransactionService
     end
 
     def item_total
-      @item_total ||= unit_price * quantity
+      return @item_total if defined?(@item_total)
+
+      item_total = 0
+
+      if quantity >= Booking::MONTHLY_BOOKING_DAYS && monthly_price > 0
+        overtime = quantity - Booking::MONTHLY_BOOKING_DAYS
+
+        item_total = monthly_price
+        item_total += ((unit_price * overtime) || 0) if overtime > 0
+      elsif quantity >= Booking::WEEKLY_BOOKING_DAYS && weekly_price > 0
+        overtime = quantity - Booking::WEEKLY_BOOKING_DAYS
+
+        item_total = weekly_price
+        item_total += ((unit_price * overtime) || 0) if overtime > 0
+      else
+        item_total += ((unit_price * quantity) || 0)
+      end
+
+      @item_total = item_total    
     end
 
     def unit_price
       listing.price
+    end
+    
+    def weekly_price
+      listing.weekly_price || 0
+    end
+
+    def monthly_price
+      listing.monthly_price || 0
     end
 
     def shipping_total
@@ -91,6 +121,33 @@ module TransactionService
         end
     end
 
+    def over_duration
+      return @over_duration if defined?(@over_duration)
+
+      @over_duration = 0
+      @over_duration = if quantity >= Booking::MONTHLY_BOOKING_DAYS
+        quantity - Booking::MONTHLY_BOOKING_DAYS
+      elsif quantity >= Booking::WEEKLY_BOOKING_DAYS
+        quantity - Booking::WEEKLY_BOOKING_DAYS
+      end
+
+      @over_duration
+    end
+
+    def price_unit_type
+      return @price_unit_type if defined?(@price_unit_type)
+
+      if quantity >= Booking::MONTHLY_BOOKING_DAYS && monthly_price > 0
+        @price_unit_type = 'monthly_price'
+      elsif quantity >= Booking::WEEKLY_BOOKING_DAYS && weekly_price > 0
+        @price_unit_type = 'weekly_price'
+      else
+        @price_unit_type = 'daily_price'
+      end
+
+      @price_unit_type
+    end
+
     def is_booking?
       @is_booking ||= [ListingUnit::DAY, ListingUnit::NIGHT].include?(listing.quantity_selector) ||
                       (listing.unit_type.to_s == ListingUnit::HOUR && listing.availability == 'booking')
@@ -129,4 +186,3 @@ module TransactionService
     end
   end
 end
-

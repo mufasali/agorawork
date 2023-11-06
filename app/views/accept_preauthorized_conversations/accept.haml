@@ -64,6 +64,17 @@
             %span.conversation-per-unit-value
               = MoneyViewUtils.to_humanized(listing.price)
 
+        - # Weekly, Monthly Price Rates
+        - if ['monthly_price', 'weekly_price'].include?(price_unit_type)
+          .conversation-per-unit-wrapper
+            %span.conversation-per-unit-label
+              = t("transactions.initiate.#{price_unit_type}_unit_label")
+            %span.conversation-per-unit-value
+              - if price_unit_type == 'monthly_price'
+                = MoneyViewUtils.to_humanized(monthly_price)
+              - elsif price_unit_type == 'weekly_price'
+                = MoneyViewUtils.to_humanized(weekly_price)                
+
           .conversation-booking-wrapper
             %span.conversation-booking-label
               - if unit_type_day
@@ -78,7 +89,7 @@
                 = "(#{pluralize(booking.duration, t("listing_conversations.preauthorize.day"), t("listing_conversations.preauthorize.days"))})"
               - else
                 = l booking.end_on, format: :long_with_abbr_day_name
-                = "(#{pluralize(booking.duration, t("listing_conversations.preauthorize.night"), t("listing_conversations.preauthorize.nights"))})"
+                = "(#{pluralize(booking.duration, t("listing_conversations.preauthorize.night"), t("listing_conversations.preauthorize.nights"))})"   
 
       - elsif @transaction.listing_quantity > 1
         .conversation-per-unit-wrapper
@@ -91,6 +102,18 @@
             = ListingViewUtils.translate_quantity(listing.unit_type, listing.unit_selector_tr_key) || t("conversations.accept.quantity_label")
           %span.conversation-quantity-value
             = @transaction.listing_quantity
+
+      %br
+      - # Weekly, Monthly Prices
+      - if ['monthly_price', 'weekly_price'].include?(price_unit_type)
+        .conversation-per-unit-wrapper
+          %span.conversation-per-unit-label
+            = t("transactions.initiate.price_rate")
+          %span.conversation-per-unit-value
+            - if price_unit_type == 'monthly_price'
+              = t("transactions.initiate.price_montly_rate_value_label", hour_duration: (duration - over_duration), monthly_rate: MoneyViewUtils.to_humanized(monthly_price))
+            - elsif price_unit_type == 'weekly_price'
+              = t("transactions.initiate.price_weekly_rate_value_label", hour_duration: (duration - over_duration), weekly_rate: MoneyViewUtils.to_humanized(weekly_price))
 
       .conversation-sum-wrapper
         %span.conversation-sum-label

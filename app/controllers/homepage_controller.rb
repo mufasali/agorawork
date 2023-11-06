@@ -8,6 +8,9 @@ class HomepageController < ApplicationController
 
   # rubocop:disable AbcSize
   # rubocop:disable MethodLength
+  def home
+  end
+
   def index
     params = unsafe_params_hash.select{|k, v| v.present? }
 
@@ -60,7 +63,7 @@ class HomepageController < ApplicationController
     includes =
       case @view_type
       when "grid"
-        [:author, :listing_images]
+        [:author, :listing_images, :location]
       when "list"
         [:author, :listing_images, :num_of_reviews]
       when "map"
@@ -70,7 +73,7 @@ class HomepageController < ApplicationController
       end
 
     main_search = search_mode
-    enabled_search_modes = search_modes_in_use(params[:q], params[:lc], main_search)
+    enabled_search_modes = search_modes_in_use(params[:keyword], params[:lc], main_search)
     keyword_in_use = enabled_search_modes[:keyword]
     location_in_use = enabled_search_modes[:location]
 
@@ -86,9 +89,9 @@ class HomepageController < ApplicationController
                                   keyword_search_in_use: keyword_in_use,
                                   relevant_search_fields: relevant_search_fields)
 
-    if @view_type == 'map'
+    #if @view_type == 'map'
       viewport = viewport_geometry(params[:boundingbox], params[:lc], @current_community.location)
-    end
+    #end
 
     if FeatureFlagHelper.feature_enabled?(:searchpage_v1)
       search_result.on_success { |listings|
@@ -169,7 +172,7 @@ class HomepageController < ApplicationController
       categories: filter_params[:categories],
       listing_shape_ids: Array(filter_params[:listing_shape]),
       price_cents: filter_range(params[:price_min], params[:price_max]),
-      keywords: keyword_search_in_use ? params[:q] : nil,
+      keywords: keyword_search_in_use ? (params[:keyword]) : nil,
       fields: relevant_search_fields,
       per_page: listings_per_page,
       page: current_page,
@@ -177,7 +180,10 @@ class HomepageController < ApplicationController
       price_max: params[:price_max],
       locale: I18n.locale,
       include_closed: false,
-      sort: nil
+      sort: nil,
+      boundingbox: params[:boundingbox],
+      start_date: params[:start_date],
+      start_time: params[:start_time]
     }
 
     if @view_type != 'map' && location_search_in_use

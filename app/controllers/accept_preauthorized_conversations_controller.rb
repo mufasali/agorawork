@@ -177,6 +177,11 @@ class AcceptPreauthorizedConversationsController < ApplicationController
 
     render "accept", locals: {
       listing: @listing,
+      price_unit_type: @transaction.price_unit_type,
+      weekly_price: @transaction.weekly_price,
+      monthly_price: @transaction.monthly_price,
+      duration: @transaction.listing_quantity,
+      over_duration: @transaction.over_duration,
       sum: total_price + (payment_details[:payment_gateway_fee] || 0),
       fee: @transaction.commission,
       buyer_commission: payment_details[:buyer_commission],

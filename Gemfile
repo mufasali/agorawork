@@ -26,6 +26,7 @@ gem 'rest-client', '~> 2.0.2'
 
 gem 'paperclip', '~> 6.0.0'
 gem 'delayed_paperclip', '~> 3.0.1'
+gem 'daemons'
 
 # Active Storage
 gem 'image_processing', '~> 1.9.3'
@@ -130,6 +131,7 @@ group :development do
   gem 'zeus', '~> 0.15.13', require: false
   gem 'web-console', '~> 3.7.0'
   gem 'awesome_print', '~> 1.7.0'
+  gem "letter_opener"
 end
 
 group :test do
@@ -186,3 +188,5 @@ gem "select2-rails"
 gem "cocoon"
 gem "fast-polylines"
 gem "codemirror-rails"
+gem 'geocoder'
+gem 'exception_notification'

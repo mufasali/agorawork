@@ -77,7 +77,7 @@ window.ST = window.ST || {};
           statusInput.value = window.google.maps.places.PlacesServiceStatus.OK;
           locationQueryMade = true;
           updateViewportData(place.geometry.viewport);
-          form.submit();
+          //form.submit();
         } else {
           coordinateInput.value = ""; // clear previous coordinates
           // Let's pick first suggestion, if no geometry was returned by autocompletion

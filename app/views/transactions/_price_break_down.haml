@@ -14,6 +14,17 @@
       %span.initiate-transaction-per-unit-value
         = MoneyViewUtils.to_humanized(listing_price)
 
+    - # Weekly, Monthly Price Rates
+    - if ['monthly_price', 'weekly_price'].include?(price_unit_type)
+      .initiate-transaction-booking-wrapper
+        %span.initiate-transaction-booking-label
+          = t("transactions.initiate.#{price_unit_type}_unit_label")
+        %span.initiate-transaction-booking-value.text-right
+          - if price_unit_type == 'monthly_price'
+            = MoneyViewUtils.to_humanized(monthly_price)
+          - elsif price_unit_type == 'weekly_price'
+            = MoneyViewUtils.to_humanized(weekly_price)        
+
     .initiate-transaction-booking-wrapper
       - if per_hour
         %span.initiate-transaction-booking-label
@@ -40,6 +51,23 @@
           - else
             = l end_on, format: :long_with_abbr_day_name
             = "(#{pluralize(duration, t("listing_conversations.preauthorize.night"), t("listing_conversations.preauthorize.nights"))})"
+    
+    %br
+    - # Weekly, Monthly Prices
+    - if ['monthly_price', 'weekly_price'].include?(price_unit_type)            
+      .initiate-transaction-booking-wrapper
+        %span.initiate-transaction-booking-label
+          = t("transactions.initiate.price_rate")
+        %span.initiate-transaction-booking-value.text-right   
+          - if price_unit_type == 'monthly_price'
+            = t("transactions.initiate.price_montly_rate_value_label", hour_duration: (duration - over_duration), monthly_rate: MoneyViewUtils.to_humanized(monthly_price))
+          - elsif price_unit_type == 'weekly_price'
+            = t("transactions.initiate.price_weekly_rate_value_label", hour_duration: (duration - over_duration), weekly_rate: MoneyViewUtils.to_humanized(weekly_price))
+        
+        -# Over Duration label  
+        - if over_duration.present? && over_duration > 0
+          %span.initiate-transaction-booking-value.text-right{style: "margin-left: 50px;"}
+            = t("transactions.initiate.price_daily_rate_value_label", duration_label: "#{pluralize(over_duration, 'day')}", daily_rate: MoneyViewUtils.to_humanized(listing_price))            
 
   - elsif quantity.present? && localized_unit_type.present?
     .initiate-transaction-per-unit-wrapper

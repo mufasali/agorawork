@@ -1,5 +1,4 @@
 = render 'layouts/head'
-
 %body
 
   #sidewinder-wrapper
@@ -8,6 +7,7 @@
     = prepend_render_rails_context("")
 
     - is_homepage = params[:controller] == "homepage" && params[:action] == "index"
+    - is_landing_page = controller_name == 'homepage' && action_name == 'home'
     %noscript
       .noscript-padding
         -# Noscript content will be positioned here
@@ -36,35 +36,39 @@
         = render partial: "layouts/admin_expiration_notice", locals: {external_plan_service_login_url: admin2_plan_path}
       - else
         = render partial: "layouts/expiration_notice", locals: {contact_owner_link: new_user_feedback_path}
+  
+    - if is_landing_page
+      = yield
+    - else
+      - content_for(:page_content) do
+        - if content_for?(:banner_warning)
+          %section.banner.banner--warning
+            .banner--title-wrapper
+              .banner--title
+                = yield :banner_warning
+        - unless is_homepage
+          %section.marketplace-lander
+            - if @big_cover_photo
+              .coverimage
+                %figure.marketplace-cover.fluidratio
+                  .lander-content.marketplace-lander-content
+                    = yield :title_header
+            - elsif !(is_homepage && FeatureFlagHelper.feature_enabled?(:topbar_v1))
+              .coverimage
+                %figure.marketplace-cover-small.fluidratio
+                .coverimage-fade{:class => yield(:coverfade_class)}
+                  %figure.marketplace-cover-small-fade.fluidratio
+              .title-container
+                .title-header-wrapper
+                  .marketplace-title-header
+                    = yield :title_header
 
-    - content_for(:page_content) do
-      - if content_for?(:banner_warning)
-        %section.banner.banner--warning
-          .banner--title-wrapper
-            .banner--title
-              = yield :banner_warning
-      %section.marketplace-lander
-        - if @big_cover_photo
-          .coverimage
-            %figure.marketplace-cover.fluidratio
-              .lander-content.marketplace-lander-content
-                = yield :title_header
-        - elsif !(is_homepage && FeatureFlagHelper.feature_enabled?(:topbar_v1))
-          .coverimage
-            %figure.marketplace-cover-small.fluidratio
-            .coverimage-fade{:class => yield(:coverfade_class)}
-              %figure.marketplace-cover-small-fade.fluidratio
-          .title-container
-            .title-header-wrapper
-              .marketplace-title-header
-                = yield :title_header
-
-      %article.page-content{class: is_homepage && !@big_cover_photo ? 'no-cover-photo' : ''}
-        .wrapper
-          = render :partial => "layouts/notifications"
-          = yield
-          - if display_branding_info?
-            = render partial: "layouts/non_whitelabel_branding", locals: {link_to_sharetribe: "https://www.sharetribe.com/?utm_source=#{@current_community.ident}.sharetribe.com&utm_medium=referral&utm_campaign=nowl-footer"}
+        %article.page-content{class: is_homepage && !@big_cover_photo ? 'no-cover-photo listing-page' : ''}
+          .wrapper
+            = render :partial => "layouts/notifications"
+            = yield
+            - if display_branding_info?
+              = render partial: "layouts/non_whitelabel_branding", locals: {link_to_sharetribe: "https://www.sharetribe.com/?utm_source=#{@current_community.ident}.sharetribe.com&utm_medium=referral&utm_campaign=nowl-footer"}
     -#
       This is not pretty, but works.
       On homepage, we want to wrap the whole page content (search bar and the "real" content) to a form, so that
@@ -76,7 +80,7 @@
         - search_params = ["q", "lc", "ls", "boundingbox", "distance_max"]
         - excluded_params = search_params unless FeatureFlagHelper.feature_enabled?(:topbar_v1)
         - params.except("action", "controller", "view", "utf8", *excluded_params).each do |param, value|
-          - unless CustomFieldSearchParams.custom_field_search_param?(param) || param.match(/^price_/)
+          - unless CustomFieldSearchParams.custom_field_search_param?(param) || param.match(/^price_/) || param.match(/^start_date/) || param.match(/^end_date/)
             = hidden_field_tag param, value
         = hidden_field_tag "view", @view_type
         = content_for(:page_content)
@@ -84,7 +88,8 @@
       = content_for(:page_content)
 
     - if @custom_footer.try(:display?)
-      = render 'layouts/footer'
+      -unless is_homepage
+        = render 'layouts/footer'
 
     -# Most of the JavaScript should be for performance reasons at the end of the body
 

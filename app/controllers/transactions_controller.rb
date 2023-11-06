@@ -369,12 +369,15 @@ class TransactionsController < ApplicationController
 
       TransactionViewUtils.price_break_down_locals({
         listing_price: tx.unit_price,
+        weekly_price: tx.weekly_price,
+        monthly_price: tx.monthly_price,
         localized_unit_type: localized_unit_type,
         localized_selector_label: localized_selector_label,
         booking: booking,
         start_on: booking ? tx.booking.start_on : nil,
         end_on: booking ? tx.booking.end_on : nil,
         duration: booking ? tx.listing_quantity : nil,
+        over_duration: tx.over_duration || 0,
         quantity: quantity,
         subtotal: show_subtotal ? tx.item_total : nil,
         total: Maybe(tx.payment_total).or_else(payment[:total_price]),
@@ -383,6 +386,7 @@ class TransactionsController < ApplicationController
         shipping_price: tx.shipping_price,
         total_label: total_label,
         unit_type: tx.unit_type,
+        price_unit_type: tx.price_unit_type,
         per_hour: booking_per_hour,
         start_time: booking_per_hour ? tx.booking.start_time : nil,
         end_time: booking_per_hour ? tx.booking.end_time : nil,

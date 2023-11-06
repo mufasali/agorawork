@@ -54,6 +54,7 @@
         = hidden_field_tag :delivery, delivery_method
 
       = hidden_field_tag :payment_type
+      = hidden_field_tag :price_unit_type, price_unit_type
 
       - if stripe_in_use
         .row

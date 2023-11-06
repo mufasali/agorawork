@@ -24,6 +24,7 @@ Rails.application.config.assets.precompile += %w(
   admin2/admin.scss
   popper.min.js
   bootstrap.min.js
+  landing_page_new/base.scss
 )
 
 if Rails.env == 'test'

@@ -15,7 +15,8 @@ $bubbleDetailsMargin: em(5, $googleMapsFontSize);
 
 .bubble-item {
   position: relative;
-  height: $bubbleItemHeight;
+  //height: $bubbleItemHeight;
+  height: 17.63636em;
   z-index: 1;
   float: left;
   overflow: hidden;
@@ -27,7 +28,7 @@ $bubbleDetailsMargin: em(5, $googleMapsFontSize);
 
   width: $width;
   height: $height;
-
+  height: 12em;
   // Hide, if picture height or width is bigger than 250/150
   overflow: hidden;
 
@@ -135,6 +136,7 @@ $bubbleDetailsMargin: em(5, $googleMapsFontSize);
 
     &, > img {
       height: $bubbleDetailsHeight - (2 * $bubbleDetailsMargin);
+      border-radius: 50%;
     }
   }
 }
@@ -183,6 +185,7 @@ $bubbleDetailsMargin: em(5, $googleMapsFontSize);
 
   > a {
     line-height: em(30, 11);
+    text-transform: capitalize;
 
     // Add ellipsis (...) for too long name
     @extend .bubble-details-text-overflow;
@@ -191,7 +194,8 @@ $bubbleDetailsMargin: em(5, $googleMapsFontSize);
 
 .bubble-overlay {
   position: absolute;
-  bottom: $bubbleDetailsHeight;
+  /*bottom: $bubbleDetailsHeight;*/
+  bottom: 5.63636em;
   left: 0;
   right: 0;
   top: 0;
@@ -199,20 +203,31 @@ $bubbleDetailsMargin: em(5, $googleMapsFontSize);
 }
 
 span.bubble-title-link {
-  $margin: em(5, 14);
+  /*$margin: em(5, 14);
   position: absolute;
   bottom: $margin;
   left: $margin * 2;
   right: $margin * 2;
-  color: $background;
-  font-size: 14px;
-  vertical-align: bottom;
-  line-height: lines(0.9);
+  color: $background;*/
+  font-size: 13px;
+  /*vertical-align: bottom;
+  line-height: lines(0.9);*/
+  position: relative;
+  color: #000;
+  padding: 6px;
+  top: -22px;
+  text-transform: capitalize;
+  width: 100% !important;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  display: block;
 
-  .bubble-no-image & {
+  /*.bubble-no-image & {
     top: $margin;
     color: $aside;
-  }
+  }*/
 }
 
 .map div {

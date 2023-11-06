@@ -63,8 +63,9 @@
   @include huge-type;
   color: $light-body;
   display: block;
-  float: left;
+  //float: left;
   margin-right: lines(0.25);
+  font-size: 2em;
 }
 
 .listing-price-quantity {

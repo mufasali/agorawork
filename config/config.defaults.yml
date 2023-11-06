@@ -389,7 +389,7 @@ default: &default_settings
   # The hosted version stores the landing page data in the database but for single
   # marketplace OS installations the database doesn't bring any benifits. That's why
   # the static version is used instead of database in OS installations.
-  clp_static_enabled: false
+  clp_static_enabled: true
 
   # Landing page is cached heavily.
   #
@@ -544,6 +544,7 @@ development:
 
   paypal_implementation: real
   fakepal_store: 'tmp/dev_fakepal.store'
+  mail_delivery_method: letter_opener
 
 test:
   <<: *default_settings

@@ -110,6 +110,10 @@ module TransactionService::Store::Transaction
         tx_model.build_booking(
           start_on: start_on,
           end_on: end_on)
+
+        # Allow user to book same booking date again
+          tx_model.booking.skip_validation = true
+        # Allow user to book same booking date again  
       end
       tx_model.booking.tx = tx_model
     end

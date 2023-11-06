@@ -81,6 +81,9 @@ Rails.application.configure do
 
   if APP_CONFIG.mail_delivery_method == "sendmail"
     ActionMailer::Base.delivery_method = :sendmail
+  elsif APP_CONFIG.mail_delivery_method == "letter_opener"
+    config.action_mailer.delivery_method = :letter_opener
+    config.action_mailer.perform_deliveries = true
   elsif APP_CONFIG.mail_delivery_method == "smtp"
     # Enable sending mail from localhost
     ActionMailer::Base.smtp_settings = {

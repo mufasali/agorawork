@@ -181,6 +181,9 @@ module TransactionService::Transaction
   def complete_preauthorization(community_id:, transaction_id:, message: nil, sender_id: nil)
     tx = find_tx_model(community_id: community_id, transaction_id: transaction_id)
 
+    # Decrease Quantity by 1
+      tx.listing.decrement!(:quantity_of_listings, 1)
+    # Decrease Quantity by 1  
     tx_process = tx_process(tx.payment_process)
     gw = gateway_adapter(tx.payment_gateway)
 

@@ -34,6 +34,9 @@
 #  shape_name_tr_key               :string(255)
 #  action_button_tr_key            :string(255)
 #  price_cents                     :integer
+#  weekly_price_cents              :integer
+#  monthly_price_cents             :integer
+#  quantity_of_listings            :integer
 #  currency                        :string(255)
 #  quantity                        :string(255)
 #  unit_type                       :string(32)

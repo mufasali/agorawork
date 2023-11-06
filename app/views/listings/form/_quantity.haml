@@ -1,0 +1,5 @@
+.quantity-container
+  - if @listing_presenter.shape[:price_enabled]
+    = form.label :quantity_of_listings, t(".quantity")
+    = form.text_field :quantity_of_listings, :class => "price-field", min: 1, :maxlength => "10", :placeholder => "1", :value => (@listing.quantity_of_listings ? @listing.quantity_of_listings.to_s: 1)
+    

@@ -24,6 +24,7 @@ var markerContents = [];
 var markersArr = [];   // Array for keeping track of markers on map
 var showingMarker = "";
 var markerCluster = null;
+var icounter = 0;
 
 $.validator.
 addMethod("address_validator",
@@ -481,7 +482,7 @@ function initialize_listing_map(listings, community_location_lat, community_loca
     infowindow.setMinHeight(235);
     infowindow.setMinWidth(425);
   } else {
-    infowindow.setMinHeight(150);
+    infowindow.setMinHeight(200);
     infowindow.setMinWidth(225);
   }
   directionsService = new google.maps.DirectionsService();
@@ -490,8 +491,8 @@ function initialize_listing_map(listings, community_location_lat, community_loca
   helsinki = new google.maps.LatLng(60.17, 24.94);
   flagMarker = new google.maps.Marker();
   var myOptions = {
-    zoom: 16,
-    maxZoom: 17,
+    zoom: 10,
+    maxZoom: 20,
     mapTypeId: google.maps.MapTypeId.ROADMAP
   };
   map = new google.maps.Map(document.getElementById("map-canvas"), myOptions);
@@ -524,6 +525,7 @@ function setMapCenter(communityLat, communityLng, preferCommunityLocation) {
   }
 }
 
+
 function addListingMarkers(listings, viewport) {
   // Test requesting location data
   // Now the request_path needs to also have a query string with the wanted parameters
@@ -533,9 +535,29 @@ function addListingMarkers(listings, viewport) {
 
   for (i in listings) {
     (function() {
+      function n(){
+        directionsDisplay.setMap(null);
+        flagMarker.setOptions({map:null});
+        if (showingMarker==marker.getTitle()) {
+          showingMarker = "";
+        } else {
+          showingMarker=marker.listingId;
+          infowindow.setContent("<div id='map_bubble'><img class='bubble-loader-gif' src='https://s3.amazonaws.com/sharetribe/assets/ajax-loader-grey.gif'></div>");
+          infowindow.setMaxHeight(200);
+          infowindow.setMinHeight(200);
+          infowindow.open(map,marker);
+          $.ajax({
+            url: '/' + locale + '/listing_bubble/' + entry.id,
+            dataType: "html",
+            success: function(data) {
+              $('#map_bubble').html(data);
+            }
+          });
+        }
+      }
+
       var entry = listings[i];
       if (entry["latitude"]) {
-
         var location;
         location = new google.maps.LatLng(entry["latitude"], entry["longitude"]);
 
@@ -545,14 +567,13 @@ function addListingMarkers(listings, viewport) {
         });
 
         // Marker icon based on category
-        var label = new Label({
-                       map: map
-                  });
-                  label.set('zIndex', 1234);
-                  label.bindTo('position', marker, 'position');
-                  label.set('text', "");
-                  label.set('color', "#FFF");
+        var label = new Label({ map: map });
+        label.set('zIndex', 1234);
+        label.bindTo('position', marker, 'position');
+        label.set('text', "");
+        label.set('color', "#FFF");
         marker.set("label", label);
+        marker.set("listingId", entry["id"]);
 
         markers.push(marker);
         markerContents.push(entry["id"]);
@@ -564,34 +585,30 @@ function addListingMarkers(listings, viewport) {
           showingMarker = "";
         });
 
+        google.maps.event.addListener(marker,"mouseover", function(){ n(); });
+        marker.getTitle();
+        // google.maps.event.addListener(marker,"mouseout", function(){
+        //   $("#listing_"+marker.listingId).removeClass("highlighted")
+        // });
+
         google.maps.event.addListener(marker, 'click', function() {
-          infowindow.close();
-          directionsDisplay.setMap(null);
-          flagMarker.setOptions({map:null});
-          if (showingMarker==marker.getTitle()) {
-            showingMarker = "";
-          } else {
-            showingMarker = marker.getTitle();
-            infowindow.setContent("<div id='map_bubble'><img class='bubble-loader-gif' src='https://s3.amazonaws.com/sharetribe/assets/ajax-loader-grey.gif'></div>");
-            infowindow.setMaxHeight(150);
-            infowindow.setMinHeight(150);
-            infowindow.open(map,marker);
-            $.ajax({
-              url: '/' + locale + '/listing_bubble/' + entry.id,
-              dataType: "html",
-              success: function(data) {
-                $('#map_bubble').html(data);
-              }
-            });
-          }
+          icounter+=1;
+          marker.setZIndex(google.maps.Marker.MAX_ZINDEX+icounter);
+          n();
+        }, function(){
         });
       }
+      $("#listing-"+marker.listingId).hover(function(){
+        icounter+=1;
+        marker.setZIndex(google.maps.Marker.MAX_ZINDEX+icounter);
+        n();
+      }, function(){
+      });
     })();
   }
 
   var latitudes = _(listings).pluck("latitude").filter().map(Number).value();
   var longitudes = _(listings).pluck("longitude").filter().map(Number).value();
-
 
   if (viewport && viewport.boundingbox) {
     var boundingbox = viewport.boundingbox;

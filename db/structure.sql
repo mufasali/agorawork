@@ -889,6 +889,9 @@ CREATE TABLE `listings` (
   `shape_name_tr_key` varchar(255) DEFAULT NULL,
   `action_button_tr_key` varchar(255) DEFAULT NULL,
   `price_cents` int(11) DEFAULT NULL,
+  `weekly_price_cents` int(11) DEFAULT NULL,
+  `monthly_price_cents` int(11) DEFAULT NULL,
+  `quantity_of_listings` int(11) DEFAULT NULL,
   `currency` varchar(255) DEFAULT NULL,
   `quantity` varchar(255) DEFAULT NULL,
   `unit_type` varchar(32) DEFAULT NULL,
@@ -1547,7 +1550,10 @@ CREATE TABLE `transactions` (
   `listing_author_uuid` binary(16) NOT NULL,
   `listing_title` varchar(255) DEFAULT NULL,
   `unit_type` varchar(32) DEFAULT NULL,
+  `price_unit_type` varchar(255) DEFAULT NULL,
   `unit_price_cents` int(11) DEFAULT NULL,
+  `weekly_price_cents` int(11) DEFAULT '0',
+  `monthly_price_cents` varchar(255) DEFAULT '0',
   `unit_price_currency` varchar(8) DEFAULT NULL,
   `unit_tr_key` varchar(64) DEFAULT NULL,
   `unit_selector_tr_key` varchar(64) DEFAULT NULL,
@@ -2488,6 +2494,9 @@ INSERT INTO `schema_migrations` (version) VALUES
 ('20201221132459'),
 ('20210108111345'),
 ('20210129114823'),
-('20210517131520');
+('20210517131520'),
+('20220827185105'),
+('20220827193132'),
+('20230307062630');
 
 

@@ -3,6 +3,7 @@
 
 - content_for :coverfade_class do
   = "without-text"
+= stylesheet_link_tag "https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css"
 
 - content_for :extra_javascript do
   - # maps.google can't be loaded twice
@@ -10,11 +11,20 @@
   - key_param = maps_key ? "&key=#{maps_key}" : ""
   - # Topbar adds its own maps script, otherwise add it if location search enabled or map is visible
   - needs_maps = !FeatureFlagHelper.feature_enabled?(:topbar_v1) && (main_search != :keyword || @view_type.eql?("map"))
-  - if(needs_maps)
-    = javascript_include_tag "//maps.googleapis.com/maps/api/js?libraries=places#{key_param}"
-  - if(@view_type.eql?("map"))
-    = javascript_include_tag "markerclusterer.js"
-
+  = javascript_include_tag "//maps.googleapis.com/maps/api/js?libraries=places#{key_param}"
+  = javascript_include_tag "markerclusterer.js"
+  =# javascript_include_tag "range_datepicker.js"
+  = javascript_include_tag "https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"
+  = javascript_include_tag "https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"
+- content_for :extra_javascript do
+  :javascript
+    window.ST.initializeLocationSearch({form: '#homepage-filters', search: '#q', status: '#ls', coordinate: '#lc', boundingbox: '#boundingbox', maxDistance: '#distance_max'});  
+%style
+  :plain
+    .SearchBar__root__2hIPj { display: none;}
+    @media only screen and (max-width: 767px) {
+      .SearchBar__root__2hIPj { display: block; pointer-events: none; opacity: 0;}
+    }
 - content_for :title_header do
   - is_homepage = params[:controller] == "homepage" && params[:action] == "index"
   - if @big_cover_photo
@@ -38,13 +48,17 @@
           - else
             = render partial: "search_bar"
   - elsif !(is_homepage && FeatureFlagHelper.feature_enabled?(:topbar_v1))
-    .browse-view-search-form
-      - if(main_search == :location)
-        = render partial: "location_bar"
-      - else
-        = render partial: "search_bar"
+    - if (main_search == :keyword_and_location)
+      .browse-view-search-form.lc_keywrd_search
+        = render partial: "keyword_and_location_bar"
+    - else
+      .browse-view-search-form
+        - if(main_search == :location)
+          = render partial: "location_bar"
+        - else
+          = render partial: "search_bar"
 
--# - content_for(:head) do
+- content_for(:head) do
   - if seo_pagination_links[:prev].present?
     %link{rel: "prev", href: seo_pagination_links[:prev]}
   - if seo_pagination_links[:next].present?
@@ -58,113 +72,200 @@
     = t(".this_is_private_community")
 
 - else
-
-  .home-toolbar
-
-    - if listing_shape_menu_enabled || @category_menu_enabled
-      .home-toolbar-show-filters-button-container
-        .home-toolbar-show-filters-button#home-toolbar-show-filters
-          = t(".filter")
-
-    .home-toolbar-button-group{:class => listing_shape_menu_enabled || @category_menu_enabled ? "filters-enabled" : ""}
-      - allowed_view_types.each do |view_type|
-        - selected_class = @view_type == view_type ? "selected" : ""
-        = link_to search_path(search_params.merge(view: view_type)), :class => "home-toolbar-button-group-button #{selected_class}", :title => t("homepage.filters.#{view_type}_button") do
-          = icon_tag(view_type, ["icon-fix", "home-button-group-icon"])
-          %span.home-toolbar-button-text
-            = t("homepage.filters.#{view_type}_button")
-
-    - if listing_shape_menu_enabled || @category_menu_enabled
-      .home-toolbar-filters.home-toolbar-filters-mobile-hidden#home-toolbar-filters
-        - if listing_shape_menu_enabled
-          .toggle-container.home-toolbar-toggle-container
-            .toggle.with-borders#home_toolbar-select-share-type{data: {toggle: '.home-toolbar-share-type-menu'}}
-              .toggle-header-container
-                .toggle-header
-                  - if selected_shape
-                    = t(selected_shape[:name_tr_key])
-                  - else
-                    = t("homepage.filters.all_listing_types")
-
-                = icon_tag("dropdown", ["icon-dropdown"])
-
-            .home-toolbar-share-type-menu.toggle-menu.hidden
-              = link_to t("homepage.filters.all_listing_types"), search_path(search_params.merge({transaction_type: "all"}))
-              - shapes.each do |shape|
-                = link_to search_path(search_params.merge({transaction_type: shape[:name]})), class:  "toggle-menu-subitem" do
-                  = t(shape[:name_tr_key])
-
-        - if @show_categories
-          .toggle-container.home-toolbar-toggle-container.hidden-tablet
-            .toggle.with-borders{data: {toggle: '#home-toolbar-categories-menu'}}
-              .toggle-header-container
-                .toggle-header
-                  - if selected_category
-                    = @category_display_names[selected_category.id]
-                  - else
-                    = t("homepage.filters.all_categories")
-
-                = icon_tag("dropdown", ["icon-dropdown"])
-            #home-toolbar-categories-menu.toggle-menu
-              = link_to t("homepage.filters.all_categories"), search_path(search_params.merge({category: "all"}))
-              - @main_categories.each do |category|
-                = link_to @category_display_names[category.id], search_path(search_params.merge({category: category}))
-                - if category.children
-                  - category.children.each do |child|
-                    - is_selected = selected_category == child
-                    = link_to @category_display_names[child.id], search_path(search_params.merge({category: child})), :class => "toggle-menu-subitem"
-
-        / Filters
-        .hidden-tablet
-          - # Filters will be relocated to #desktop-filters when in desktop
-          #filters
-            = render :partial => "filters", :locals => { show_price_filter: show_price_filter, show_custom_fields: @show_custom_fields, filters: filters }
-
-  .row
-    - if @category_menu_enabled
-      .col-3.visible-tablet
-        - if @show_categories
-          .row
-            .col-12
-              = link_to t("homepage.filters.all_categories"), search_path(search_params.merge({category: "all"})), :class => "home-categories-main #{if selected_category.nil? then 'selected' end}"
-              - @main_categories.each do |category|
-                - show_subcategories = show_subcategory_list(category, Maybe(selected_category).id.to_i.or_else(nil))
-                = link_to @category_display_names[category.id], search_path(search_params.merge({category: category})), :class => "home-categories-main #{if show_subcategories then 'selected' end} #{if category.has_subcategories? then 'has-subcategories' end}", :data => {category: category.id}
-                - if category.children
-                  - if show_subcategories
-                    - category.children.each do |child|
-                      - is_selected = selected_category == child
-                      = link_to @category_display_names[child.id], search_path(search_params.merge({category: child})), :class => "home-categories-sub #{if is_selected then 'selected' end}", :data => {:"sub-category" =>child.id}
-
-        #desktop-filters
-          - # Filters will be relocated here when in desktop
-
-    - main_container_class = if @category_menu_enabled then "col-9" else "col-12" end
-    %div{:class => main_container_class}
-      - if @listings.total_entries > 0
-        - if @view_type.eql?("map")
-          .home-map
-            = render :partial => "map", locals: { viewport: viewport }
-        - else
-          - if @view_type.eql?("grid")
-            %div{class: @category_menu_enabled ? "home-fluid-thumbnail-grid-narrow" : "home-fluid-thumbnail-grid-wide"}
-              .home-fluid-thumbnail-grid
-                = render partial: "grid_item", collection: @listings, as: :listing, locals: { show_distance: location_search_in_use }
-          - else
-            .home-listings
-              - if (location_search_in_use)
-                = render partial: "list_item_with_distance", collection: @listings, as: :listing, locals: { shape_name_map: shape_name_map, show_distance: location_search_in_use }
-              - else
-                = render partial: "list_item", collection: @listings, as: :listing, locals: { shape_name_map: shape_name_map }
-          .home-loading-more
-            = will_paginate(@listings)
-            - item_container = if @view_type.eql?("grid") then '.home-fluid-thumbnail-grid' else '.home-listings' end
-            = pageless(@listings.total_pages, item_container, current_search_path_without_page, t('.loading_more_content'), current_page)
+  .main_content
+    %span.phone_map_close_btn.showMap
+      ×
+    - if @listings.total_entries > 0
+      - if @view_type.eql?("map")
+        .home-map
       - else
-        .home-no-listings
-          - if params[:q] || params[:category] || params[:share_type] # Some filter in use
-            = t(".no_listings_with_your_search_criteria")
-          - else
-            = t(".no_listings_notification",
-                  add_listing_link: link_to(t(".add_listing_link_text"),
-                  new_listing_path(ref: "add_listing_link"))).html_safe
+        - if @view_type.eql?("grid")
+          = render :partial => "map", locals: { viewport: viewport }
+          .listing-container
+            %div.top-bars
+              .phone-show-only
+                %span.filter-ic.filter-btn
+                  %i.icon-filter
+                  = t("homepage.index.filter")
+                %span.show-map-sm.filter-btn.showMap
+                  %i.icon-map-marker
+                  = t("homepage.index.show_map")
+
+              .visible-desktop.filters
+                -# Category filter
+                - if @category_menu_enabled && @main_categories.count > 1
+                  .toggle#home_toolbar-select-share-type{data: {toggle: '.category-dropdown'}}
+                    .filter-btn
+                      = t("homepage.index.category_filter_heading")
+                    .dropdownMenu.category-dropdown.toggle-menu.hidden
+                      %ul.categories
+                        %li
+                          = link_to t("homepage.filters.all_categories"), search_path(search_params.merge({category: "all"}))
+                        - @main_categories.each do |category|
+                          %li
+                            = link_to @category_display_names[category.id], search_path(search_params.merge({category: category}))
+                -# Price filter
+                .toggle#home_toolbar-select-share-type{data: {toggle: '.price-dropdown'}}
+                  .filter-btn{class: "#{ params[:price_min] || params[:price_max] ?  'active': ''}"}
+                    = t("homepage.index.price_filter_heading")
+                  .dropdownMenu.price-dropdown.toggle-menu.hidden
+                    .price_range
+                      = render partial: "price_range"
+                -# Keyword filter
+                .toggle#home_toolbar-select-share-type{data: {toggle: '.keyword-dropdown'}}
+                  .filter-btn{class: "#{ params[:keyword].present? ?  'active': ''}"}
+                    = t("homepage.index.keyword_filter_heading")
+                  .dropdownMenu.keyword-dropdown.toggle-menu.hidden
+                    %div.search_block
+                      = text_field_tag "keyword", params[:keyword], :placeholder => (@community_customization && @community_customization.search_placeholder) || t("homepage.index.what_do_you_need"), class: 'location_search'
+                      = text_field_tag 'q', params[:q], :placeholder => 'Location', class: 'keyword_search'
+                      = hidden_field_tag 'lc', params[:lc]
+                      = hidden_field_tag 'ls', ''
+                      = hidden_field_tag 'boundingbox', params[:boundingbox]
+                      = hidden_field_tag 'distance_max', ''                  
+                      %button
+                        = t("homepage.index.search_button_text")
+                .toggle#home_toolbar-select-share-type
+                  = text_field_tag :daterange, '', autocomplete: false, placeholder: 'Select Date', style: "text-align: center;", readonly: true
+                  = hidden_field_tag :start_date, params[:start_date]
+                  = hidden_field_tag :end_date, params[:end_date]
+
+                  - content_for :extra_javascript do
+                    :javascript
+                      $(function() {
+                        var startDate = "#{params[:start_date]}";
+                        var endDate = "#{params[:end_date]}";
+
+                        $('input[name="daterange"]').daterangepicker({
+                          autoUpdateInput: false,
+                          opens: 'left',
+                          minDate: new Date(),
+                          format: 'YYYY/MM/DD',
+                          autoclose: true,
+                          cancelLabel: 'Clear'
+                        });
+
+                        // Set default start date
+                        if(startDate != '' && endDate != ''){
+                          $('input[name="daterange"]').daterangepicker({
+                            startDate: new Date(startDate), 
+                            endDate: new Date(endDate)
+                          });
+                        }
+
+                        setTimeout(applyClick, 4000);
+
+                        function applyClick(){
+                          $('input[name="daterange"]').on('apply.daterangepicker', function(ev, picker) {
+                            $(this).val(picker.startDate.format('YYYY/MM/DD') + ' - ' + picker.endDate.format('YYYY/MM/DD'));
+
+                            // Set Start End date values
+                            $('#start_date').val(picker.startDate.format('YYYY/MM/DD'));
+                            $('#end_date').val(picker.endDate.format('YYYY/MM/DD'));
+
+                            //submit form
+                            console.log('--submitting...')
+                            $('#homepage-filters').submit();
+                          });
+                        };                       
+                      });                      
+                      
+                -# Clear the search functionality
+                = link_to search_path, class: 'filter-btn reset-filter' do
+                  = image_tag 'reset-icon.png'
+                -# Checkbox filter
+                  .toggle#home_toolbar-select-share-type{data: {toggle: '.checkbox-dropdown'}}
+                  .filter-btn
+                    Checkbox
+                  .dropdownMenu.checkbox-dropdown.toggle-menu.hidden
+                    .checkbox-block
+                      %label.customCheckbox
+                        One
+                        %input{:type => "checkbox"}/
+                        %span.checkmark
+                      %label.customCheckbox
+                        Two
+                        %input{:type => "checkbox"}/
+                        %span.checkmark
+                      %label.customCheckbox
+                        Three
+                        %input{:type => "checkbox"}/
+                        %span.checkmark
+                      %label.customCheckbox
+                        Four
+                        %input{:type => "checkbox"}/
+                        %span.checkmark
+                      %label.customCheckbox
+                        Five
+                        %input{:type => "checkbox"}/
+                        %span.checkmark
+
+                .filter-btn.map-show-md.showMap
+                  Map Show
+                .switch-bar
+                  %span.switch_text
+                    Hide Map
+                  %label.switch
+                    %input.switch-input{:checked => "checked", :type => "checkbox"}/
+                    %span.slider.round
+            .ls_container
+              = render partial: "grid_item_new", collection: @listings, as: :listing, locals: { show_distance: location_search_in_use }
+            .home-loading-more
+              = will_paginate @listings, :previous_label=> '<i class="icon-angle-left"></i>', :next_label=> '<i class="icon-angle-right"></i>'           
+    - else
+      .home-no-listings
+        - if params[:q] || params[:category] || params[:share_type] # Some filter in use
+          = t(".no_listings_with_your_search_criteria")
+        - else
+          = t(".no_listings_notification",
+                add_listing_link: link_to(t(".add_listing_link_text"),
+                new_listing_path(ref: "add_listing_link"))).html_safe
+
+
+- content_for :extra_javascript do
+  :javascript
+     $('.showMap').click(function(){
+      $(this).parents('.main_content').toggleClass('showMapContent');
+      $('.phone_map_close_btn').toggleClass('show');
+    })
+    $('.filter-ic').click(function(){
+      $('.visible-desktop.filters').slideToggle()
+    })
+    let content = document.querySelector('.main_content');
+    let switch_text = document.querySelector('.switch_text');
+    document.querySelector('.switch-input').addEventListener('click', ()=>{
+      content.classList.toggle('hidden_content');
+      if(content.classList.contains('hidden_content')){
+        switch_text.innerHTML= 'See Map';
+      }
+      else{
+        switch_text.innerHTML= 'Hide Map';
+      }
+    })
+
+    //Phone menu
+    let PhoneFIlterBtn = document.querySelector('.phone-view-filter');
+    let filterContent = document.querySelector('.top-bars .filters');
+    PhoneFIlterBtn.addEventListener('click', ()=>{
+      filterContent.classList.toggle('show')
+    })
+
+    let phone_switch = document.querySelector('.phone_view input');
+    let phone_switch_text = document.querySelector('.phone_switch_text');
+    let phone_map_close_btn = document.querySelector('.phone_map_close_btn');
+    let mapview = document.querySelector('#map-canvas');
+
+
+    phone_switch.addEventListener('click', ()=>{
+        mapview.classList.add('show');
+        phone_switch_text.innerHTML= 'Hide Map';
+        document.body.classList.add('body_scroll');
+        phone_map_close_btn.classList.add('show');
+    })
+
+    phone_map_close_btn.addEventListener('click', ()=> {
+      mapview.classList.remove('show');
+      phone_switch_text.innerHTML= 'See Map';
+      document.body.classList.remove('body_scroll');
+      phone_map_close_btn.classList.remove('show');
+    })

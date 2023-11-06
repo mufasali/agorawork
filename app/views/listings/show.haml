@@ -99,18 +99,19 @@
                 = t(".listing_created_at")
                 = l @listing.created_at, :format => :short_date
 
-    - if !@current_community.private?
-      .row
-        .col-12
-          .listing-social
-            .listing-fb-like-button
-              = facebook_like(current_user?(@listing.author))
-            .listing-tweet-button
-              - twitter_params =  {count: "horizontal", via: (@current_community.twitter_handle), text: @listing.title }.compact
-              = link_to("", "https://twitter.com/share", :class => "twitter-share-button", "data" => twitter_params)
-              - content_for :extra_javascript do
-                :javascript
-                  !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="https://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");
+    -# Not in use
+      - if !@current_community.private?
+        .row
+          .col-12
+            .listing-social
+              .listing-fb-like-button
+                = facebook_like(current_user?(@listing.author))
+              .listing-tweet-button
+                - twitter_params =  {count: "horizontal", via: (@current_community.twitter_handle), text: @listing.title }.compact
+                = link_to("", "https://twitter.com/share", :class => "twitter-share-button", "data" => twitter_params)
+                - content_for :extra_javascript do
+                  :javascript
+                    !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="https://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");
 
     - unless (@listing.closed? && !current_user?(@listing.author)) || !@current_community.listing_comments_in_use
       .view-item
@@ -130,13 +131,32 @@
   %aside.col-4
     - if @listing.price
       .row
-        .col-12
+        -# Daily Price
+        - if @listing.weekly_price.blank? || @listing.monthly_price.blank?
+          .col-4
+        .col-4
           .listing-price
             %span.listing-price-amount
               = MoneyViewUtils.to_humanized(@listing.price)
             - with_quantity_text(@current_community, @listing) do |text|
               %span.listing-price-quantity
                 = text
+        -# Weekly Price
+        - if @listing.weekly_price.present? && @listing.weekly_price > 0
+          .col-4
+            .listing-price
+              %span.listing-price-amount
+                = MoneyViewUtils.to_humanized(@listing.weekly_price)
+              %span.listing-price-quantity
+                = t(".per_week")
+        -# Monthly Price
+        - if @listing.monthly_price.present? && @listing.monthly_price > 0
+          .col-4
+            .listing-price
+              %span.listing-price-amount
+                = MoneyViewUtils.to_humanized(@listing.monthly_price)
+              %span.listing-price-quantity
+                = t(".per_month")
 
     .row-with-divider
       .col-12

@@ -2046,6 +2046,15 @@ en:
       no_image: "No image"
       filter: Filter
       this_is_private_community: "You need to sign up before you can view the content."
+      category_filter_heading: 'Category'
+      price_filter_heading: 'Price'
+      keyword_filter_heading: 'Keyword'
+      search_button_text: 'Search'
+      date_filter_heading: 'Date'
+      chceckin_filter_heading: 'Checkin:'
+      chceckout_filter_heading: 'Checkout:'
+      filter: 'Filter'
+      show_map: 'Show Map'
     invitation_form:
       email: "Email address(es)"
       message: "A personal message"
@@ -2439,6 +2448,18 @@ en:
         shipping_price: "Shipping fee"
         shipping_price_additional: "Additional items"
         pickup: Pickup
+      weekly_monthly_price:
+        weekly_price: 'Weekly Price'
+        per: per
+        week: week
+        monthly_price: 'Monthly Price'
+        per: per
+        month: month
+        
+      quantity:
+        quantity: Quantity
+
+
       origin:
         location: Location
         origin: Origin
@@ -2594,6 +2615,8 @@ en:
       pickup: Pickup
       pickup_no_price: Pickup
       youtube_video_player: "YouTube video player"
+      per_week: 'per week'
+      per_month: 'per month'
     unit_types:
       piece: piece
       hour: hour
@@ -3080,6 +3103,7 @@ en:
         other: "%{count} days"
   transactions:
     initiate:
+      price_rate: "Price Rate:"
       booked_days: "Booked days:"
       booked_nights: "Booked nights:"
       booked_days_label:
@@ -3103,6 +3127,11 @@ en:
         one: "(1 hour)"
         other: "(%{count} hours)"
       start_end_time: "%{start_time} to %{end_time}"
+      monthly_price_unit_label: 'Monthly Price'
+      weekly_price_unit_label: 'Weekly Price'
+      price_weekly_rate_value_label: "Weekly Rate, %{weekly_rate} per week"
+      price_montly_rate_value_label: "Monthly Rate, %{monthly_rate} per week"
+      price_daily_rate_value_label: "Day Rate x %{duration_label}, %{daily_rate} per day"
     price_per_quantity: "Price per %{unit_type}:"
     price: "Price:"
     quantity: "Quantity: %{quantity}"

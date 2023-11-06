@@ -12,6 +12,10 @@ module ManageAvailabilityPerDay
 
   # returns array of datetime at beginning of day
   def booked_dates(start_on, end_on)
+    # ---- Allowing user to book same date again ---- #
+      return []
+    # ---- Allowing user to book same date again ---- #
+
     start_on_t = start_on.is_a?(String) ? start_on.to_date : start_on
     end_on_t = end_on.is_a?(String) ? end_on.to_date : end_on
     result = []

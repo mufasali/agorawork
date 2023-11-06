@@ -1,6 +1,7 @@
 .DS_Store
 db/*.sqlite3
 db/sphinx
+db/agorawork_development.sql
 config/*.sphinx.conf
 config/database.yml
 config/config.yml
@@ -77,3 +78,5 @@ storage/
 
 # Deployment
 .toolbelt/
+backup/
+app/assets/javascripts/.googlemaps.js.swp

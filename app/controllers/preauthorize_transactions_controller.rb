@@ -8,6 +8,7 @@ class PreauthorizeTransactionsController < ApplicationController
   before_action :ensure_listing_author_is_not_current_user
   before_action :ensure_authorized_to_reply
   before_action :ensure_can_receive_payment
+  before_action :ensure_listing_quantity
 
   def initiate
     params_validator = params_per_hour? ? TransactionService::Validation::NewPerHourTransactionParams : TransactionService::Validation::NewTransactionParams
@@ -239,6 +240,13 @@ class PreauthorizeTransactionsController < ApplicationController
     end
   end
 
+  def ensure_listing_quantity
+    unless @listing.quantity_of_listings > 0
+      flash[:error] = "Booking is not available, please contact listing host!"
+      redirect_to listing_path(listing) and return
+    end
+  end
+
   def create_preauth_transaction(opts)
     case opts[:payment_type].to_sym
     when :paypal
@@ -278,7 +286,10 @@ class PreauthorizeTransactionsController < ApplicationController
           listing_author_uuid: opts[:listing].author.uuid_object,
           listing_quantity: opts[:listing_quantity],
           unit_type: opts[:listing].unit_type,
+          price_unit_type: opts[:price_unit_type],
           unit_price: opts[:listing].price,
+          weekly_price: opts[:weekly_price],
+          monthly_price: opts[:monthly_price],
           unit_tr_key: opts[:listing].unit_tr_key,
           unit_selector_tr_key: opts[:listing].unit_selector_tr_key,
           availability: opts[:listing].availability,
@@ -335,6 +346,7 @@ class PreauthorizeTransactionsController < ApplicationController
              start_time: tx_params[:start_time],
              end_time: tx_params[:end_time],
              per_hour: tx_params[:per_hour],
+             price_unit_type: order.price_unit_type,
              listing: listing,
              delivery_method: tx_params[:delivery],
              quantity: tx_params[:quantity],
@@ -392,6 +404,9 @@ class PreauthorizeTransactionsController < ApplicationController
       force_sync: !request.xhr?,
       delivery_method: tx_params[:delivery],
       shipping_price: order.shipping_total,
+      weekly_price: order.weekly_price,
+      monthly_price: order.monthly_price,
+      price_unit_type: order.price_unit_type,
       booking_fields: {
         start_on: tx_params[:start_on],
         end_on: tx_params[:end_on],

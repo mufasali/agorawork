@@ -30,14 +30,15 @@ $handle-width: 22px;
 
 /* Size */
 .noUi-horizontal {
-  height: 12px;
+  height: 8px;
 }
 
 .noUi-horizontal .noUi-handle {
   width: $handle-width;
   height: $handle-width;
   left: $handle-width / -2;
-  top: -6px;
+  top: -8px;
+  border-radius: 50%;
 }
 
 /* Disable handle stripes */

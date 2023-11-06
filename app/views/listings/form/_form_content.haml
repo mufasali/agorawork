@@ -3,6 +3,8 @@
 = form_for @listing_presenter.listing_form_object, :html => {:multipart => true} do |form|
   = render :partial => "listings/form/title", :locals => { :form => form }
   = render :partial => "listings/form/price", :locals => { :form => form, :run_js_immediately => run_js_immediately }
+  = render :partial => "listings/form/weekly_monthly_price", :locals => { :form => form, :run_js_immediately => run_js_immediately }
+  = render :partial => "listings/form/quantity", :locals => { :form => form}  
   = render :partial => "listings/form/shipping", :locals => { :form => form }
   = render :partial => "listings/form/description", :locals => { :form => form }
   = render :partial => "listings/form/custom_fields", :locals => { :form => form }

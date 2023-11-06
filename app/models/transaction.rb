@@ -26,7 +26,10 @@
 #  listing_author_uuid               :binary(16)       not null
 #  listing_title                     :string(255)
 #  unit_type                         :string(32)
+#  price_unit_type                   :string(255)
 #  unit_price_cents                  :integer
+#  weekly_price_cents                :integer          default(0)
+#  monthly_price_cents               :string(255)      default("0")
 #  unit_price_currency               :string(8)
 #  unit_tr_key                       :string(64)
 #  unit_selector_tr_key              :string(64)
@@ -95,6 +98,8 @@ class Transaction < ApplicationRecord
 
   monetize :minimum_commission_cents, with_model_currency: :minimum_commission_currency
   monetize :unit_price_cents, with_model_currency: :unit_price_currency
+  monetize :monthly_price_cents, with_model_currency: :unit_price_currency
+  monetize :weekly_price_cents, with_model_currency: :unit_price_currency
   monetize :shipping_price_cents, allow_nil: true, with_model_currency: :unit_price_currency
   monetize :minimum_buyer_fee_cents, with_model_currency: :minimum_buyer_fee_currency
 
@@ -287,7 +292,24 @@ class Transaction < ApplicationRecord
   end
 
   def item_total
-    unit_price * listing_quantity
+    item_total = 0
+    duration =  self.listing_quantity
+
+    if duration >= Booking::MONTHLY_BOOKING_DAYS && monthly_price > 0
+      overtime = duration - Booking::MONTHLY_BOOKING_DAYS
+
+      item_total = self.monthly_price
+      item_total += ((self.unit_price * overtime) || 0) if overtime > 0
+    elsif duration >= Booking::WEEKLY_BOOKING_DAYS && weekly_price > 0
+      overtime = duration - Booking::WEEKLY_BOOKING_DAYS
+
+      item_total = self.weekly_price
+      item_total += ((self.unit_price * overtime) || 0) if overtime > 0
+    else
+      item_total = unit_price * duration
+    end
+
+    item_total
   end
 
   def payment_gateway
@@ -355,11 +377,23 @@ class Transaction < ApplicationRecord
       .update_all(is_read: true) # rubocop:disable Rails/SkipsModelValidations
   end
 
+  def over_duration
+    over_duration = 0
+    over_duration = if listing_quantity > Booking::MONTHLY_BOOKING_DAYS
+      listing_quantity - Booking::MONTHLY_BOOKING_DAYS
+    elsif listing_quantity > Booking::WEEKLY_BOOKING_DAYS
+      listing_quantity - Booking::WEEKLY_BOOKING_DAYS
+    end
+
+    over_duration
+  end
+
   def payment_total
     unit_price       = self.unit_price || 0
     quantity         = self.listing_quantity || 1
+    item_total       = self.item_total || 0
     shipping_price   = self.shipping_price || 0
-    (unit_price * quantity) + shipping_price + buyer_commission
+    item_total + shipping_price + buyer_commission
   end
 
   def last_transition_by_admin?

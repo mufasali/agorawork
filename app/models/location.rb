@@ -26,6 +26,7 @@ class Location < ApplicationRecord
   belongs_to :person
   belongs_to :listing
   belongs_to :community
+  geocoded_by :google_address
 
   def search_and_fill_latlng(address=nil, locale=APP_CONFIG.default_locale)
     okresponse = false

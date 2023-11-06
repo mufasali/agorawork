@@ -704,6 +704,7 @@ en:
       reject_popup_title: "Reject the listing \"%{listing}\""
       confirm_popup_body: "This listing has not been reviewed yet. If you approve the listing it will be public and visible to all users. The seller will be notified by email. Are you sure you want to proceed?"
       reject_popup_body: "This listing has not been reviewed yet. If you reject the listing it will not be public. The seller will be notified by email. Are you sure you want to proceed?"
+      quantity: Quantity
     manage_transactions:
       view_in_stripe: "View transaction #%{id} in Stripe"
       view_in_paypal: "View transaction #%{id} in PayPal"

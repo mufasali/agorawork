@@ -13,5 +13,7 @@
 %td{class: "#{'opacity_03' if opacity}"}
   - category = listing.category
   = link_to category.display_name(I18n.locale), search_path(category: category.url), target: :_blank
+%td{class: "#{'opacity_03' if opacity}"}
+  = listing.quantity_of_listings
 %td.table-actions
   = render 'actions', presenter: presenter, listing: listing, opacity: opacity

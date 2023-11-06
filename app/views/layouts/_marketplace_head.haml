@@ -60,6 +60,11 @@
 / CSS
 = stylesheet_link_tag "application"
 
+- is_landing_page = controller_name == 'homepage' && action_name == 'home'
+- if is_landing_page
+  = stylesheet_link_tag 'landing_page_new/base'
+
+
 - if @current_community.has_customizations?
   = render partial: "layouts/style_overrides", locals: MarketplaceHelper.style_customizations_map(@current_community)
 

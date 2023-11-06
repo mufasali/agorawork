@@ -78,22 +78,48 @@ module ListingIndexService::Search
           custom_checkbox_field_options: (grouped_by_operator[:and] || []).flat_map { |v| v[:value] }
         }
 
+        order = 'sort_date DESC'
+        if search[:latitude].present? && search[:longitude].present?
+          limit = search[:distance_max].present? ? search[:distance_max] : 50000
+          if limit.present?
+            unit = search[:distance_unit]
+            limit = (limit * 1.60934) if unit == :miles
+            limit = limit * 1000
+          end
+          @coordinates = [to_radians(search[:latitude]), to_radians(search[:longitude])]
+          with.merge!(geodist: 0.0..limit.round(2))
+          order = 'geodist ASC'
+        end        
+
         models = Listing.search(
           Riddle::Query.escape(search[:keywords] || ""),
           sql: {
             include: included_models
           },
+          geo: @coordinates,
           page: search[:page],
           per_page: search[:per_page],
           star: true,
           with: with,
           with_all: with_all,
-          order: 'sort_date DESC',
+          order: order,
           max_query_time: 1000 # Timeout and fail after 1s
         )
 
         begin
-          DatabaseSearchHelper.success_result(models.total_entries, models, includes)
+          if search[:start_date].present? && search[:start_time].present?
+            start_time  = Time.parse(search[:start_date] +' '+ search[:start_time])
+            end_time    = start_time + 1.hours
+            new_booking = Booking.new(start_time: start_time, end_time: end_time, per_hour: true)
+
+            listings_available_in_period = models.select do |listing|
+              listing if listing.booking_available?(new_booking)
+            end
+
+            DatabaseSearchHelper.success_result(listings_available_in_period.size, listings_available_in_period, includes)
+          else
+            DatabaseSearchHelper.success_result(models.total_entries, models, includes)
+          end
         rescue ThinkingSphinx::SphinxError => e
           Result::Error.new(e)
         end
@@ -105,6 +131,10 @@ module ListingIndexService::Search
       pages = (SPHINX_MAX_MATCHES.to_f / per_page.to_f)
       page > pages.ceil
     end
+
+    def to_radians(degrees)
+      degrees * (Math::PI/180)
+    end    
 
     def selection_groups(groups)
       if groups[:search_type] == :and

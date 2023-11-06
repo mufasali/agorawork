@@ -1,11 +1,11 @@
 module PlanService::DataTypes
   Features = EntityUtils.define_builder(
-    [:deletable, :bool, default: false],
-    [:admin_email, :bool, default: false],
-    [:whitelabel, :bool, default: false],
-    [:footer, :bool, default: false],
-    [:landing_page, :bool, default: false],
-    [:custom_script, :bool, default: false]
+    [:deletable, :bool, default: true],
+    [:admin_email, :bool, default: true],
+    [:whitelabel, :bool, default: true],
+    [:footer, :bool, default: true],
+    [:landing_page, :bool, default: true],
+    [:custom_script, :bool, default: true]
   )
 
   Configuration = EntityUtils.define_builder(
